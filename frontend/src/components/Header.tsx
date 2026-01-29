@@ -17,7 +17,7 @@ const Header = () => {
         
         <Link to={'/about'} className="hover:bg-[#f6eed8]/30 rounded-md py-1 px-2">About</Link>
         <Link to={'/dashboard'} className="hover:bg-[#f6eed8]/30 rounded-md py-1 px-2">Dashboard</Link>
-        <Link to={'https://github.com/alokraj-05'} className="hover:bg-[#f6eed8]/30 rounded-md py-1 px-2">Github</Link>
+        <Link to={'https://github.com/alokraj-05/Draw'} className="hover:bg-[#f6eed8]/30 rounded-md py-1 px-2">Github</Link>
 
         </div>
         <ul className="flex gap-5">

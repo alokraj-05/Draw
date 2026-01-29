@@ -1,4 +1,4 @@
-import { useReactFlow, Node, Position } from "@xyflow/react";
+import { useReactFlow, Node, Position,useUpdateNodeInternals } from "@xyflow/react";
 import { CustomNodeData, HandleConfig, NodeHandleType } from "../../util/types";
 import { useState, useEffect } from "react";
 import { Button } from "@/appcomponents/ui/button";
@@ -12,6 +12,7 @@ interface NodeInspectorProps {
 }
 
 export function NodeInspector({ nodeId, onClose }: NodeInspectorProps) {
+  const updateNodeInternals = useUpdateNodeInternals()
   const { getNode, setNodes } = useReactFlow();
   const node = getNode(nodeId) as Node<CustomNodeData> | undefined;
 
@@ -51,6 +52,7 @@ export function NodeInspector({ nodeId, onClose }: NodeInspectorProps) {
       h.id === handleId ? { ...h, ...updates } : h
     );
     updateNode({ handles: updatedHandles });
+    updateNodeInternals(nodeId)
   };
 
   return (
