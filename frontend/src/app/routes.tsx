@@ -14,19 +14,16 @@ const router = createBrowserRouter([
     errorElement: <Error/>,
     children:[
       {
-        path: "/",
+        index:true,
         element: <Home/>
       },
       {
-        path: "/about",
+        path: "about",
         element: <About/>
       }
     ]
   },
-  {
-    path:"/login",
-    element: <Login/>
-  },
+  
   {
     element: <ProtectedRoute/>,
     children:[
@@ -35,6 +32,10 @@ const router = createBrowserRouter([
         element: <Dashboard/>
       }
     ]
+  },
+  {
+    path:"/login",
+    element: <Login/>
   },
   {
     path:"/privacy",
