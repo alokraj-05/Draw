@@ -10,7 +10,7 @@ export const ProtectedRoute = () => {
   if (status === "loading") {
     return <Spinner/>;
   }
-
+  //  Fix the shyt, refesh makes the page unauthorized (session is still there, but we get access of dasboard only when we come from "/" meanwhile its redirects us to /login when we hardcode url /dashboard)
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
