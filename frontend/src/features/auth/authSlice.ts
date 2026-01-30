@@ -10,7 +10,7 @@ interface AuthState {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  status: 'idle'
+  status: 'loading'
 }
 
 export const authSlice = createSlice({
@@ -27,15 +27,16 @@ export const authSlice = createSlice({
       state.user = action.payload;
     })
     .addCase(checkAuth.rejected, (state)=>{
+      console.log("Check auth failed")
       state.status = "failed";
       state.isAuthenticated = false;
       state.user = null;
     })
-    .addCase(logout.fulfilled,(state=>{
-      state.isAuthenticated = false,
-      state.user = null,
-      state.status = "idle"
-    }))
+    .addCase(logout.fulfilled,(state)=>{
+      state.isAuthenticated = false;
+      state.user = null;
+      state.status = "idle";
+    })
   }
 })
 
