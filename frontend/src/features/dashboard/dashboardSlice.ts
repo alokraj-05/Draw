@@ -17,7 +17,17 @@ interface Edge {
 }
 
 // Canvas Mode Types
-export type CanvasTool = 'select' | 'draw' | 'rectangle' | 'circle' | 'line' | 'text' | 'eraser';
+export type CanvasTool =
+  | 'select'
+  | 'draw'
+  | 'rectangle'
+  | 'circle'
+  | 'line'
+  | 'arrow'
+  | 'diamond'
+  | 'roundedRect'
+  | 'text'
+  | 'eraser';
 
 export type BaseElement = {
   id: string;
@@ -59,6 +69,27 @@ export type LineElement = BaseElement & {
   y1: number;
   x2: number;
   y2: number;
+  arrowEnd?: boolean;
+};
+
+export type DiamondElement = BaseElement & {
+  type: 'diamond';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fillColor: string;
+};
+
+export type RoundedRectElement = BaseElement & {
+  type: 'roundedRect';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fillColor: string;
+  cornerRadius: number;
+  rotation: number;
 };
 
 export type TextElement = BaseElement & {
@@ -71,7 +102,14 @@ export type TextElement = BaseElement & {
   color: string;
 };
 
-export type Element = DrawElement | RectangleElement | CircleElement | LineElement | TextElement;
+export type Element =
+  | DrawElement
+  | RectangleElement
+  | CircleElement
+  | LineElement
+  | DiamondElement
+  | RoundedRectElement
+  | TextElement;
 
 export type CanvasAppState = {
   zoom: number;
