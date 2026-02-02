@@ -178,7 +178,7 @@ export function DrawToolbar({
               <select
                 value={fontFamily}
                 onChange={(e) => onFontFamilyChange(e.target.value)}
-                className="rounded bg-slate-800 text-slate-300 text-xs px-2 py-1.5 border border-slate-600 min-w-[140px]"
+                className="rounded bg-slate-800 text-slate-300 text-xs px-2 py-1.5 border border-slate-600 min-w-35"
               >
                 {FONT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
