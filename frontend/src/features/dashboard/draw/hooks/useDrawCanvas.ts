@@ -22,6 +22,7 @@ import {
 } from "../utils/canvasUtils";
 import { renderCanvas } from "../utils/canvasRenderer";
 import type { ResizeHandle, Viewport } from "../types";
+import { toast } from "sonner";
 
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
@@ -825,11 +826,15 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         appState: data.appState,
         elements: data.elements,
       };
-      await updateFile(selectedFile.id, merged);
-      alert("Saved to drive");
+      toast.info('Saving...')
+      await updateFile(selectedFile.id, merged).then(()=>{
+        toast.success("Saved to drive");
+      }).catch(e =>{
+        toast.error(e)
+      });
     } catch (err) {
       console.error(err);
-      alert("Failed to save");
+      toast.error("Failed to save");
     }
   };
 

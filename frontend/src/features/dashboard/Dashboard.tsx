@@ -7,6 +7,7 @@ import { RootState } from '@/app/store';
 
 import Draw from './Draw';
 import {  FlowData, CanvasData } from './dashboardSlice';
+import { Toaster } from 'sonner';
 const Dashboard =  () => {
   const sidebarTriggerRef = useRef<HTMLButtonElement>(null)
   const selectedFile = useSelector((state:RootState)=> state.dashboard.selectedFile)
@@ -27,7 +28,7 @@ const Dashboard =  () => {
   },[])
 
   return (
-    <div className='flex w-full h-screen'>
+    <div className='flex w-full h-screen text-white'>
     <SidebarProvider>
       <AppSidebar/>
         <main className='w-full relative'>
@@ -43,6 +44,7 @@ const Dashboard =  () => {
           ):(
             <p className='w-full h-screen p-medium flex items-center justify-center'>Select a file to get started</p>
           )}
+          <Toaster/>
         </main>
     </SidebarProvider>
     </div>
