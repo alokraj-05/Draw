@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import type { CanvasData } from '../dashboardSlice';
 import { useDrawCanvas } from './hooks/useDrawCanvas';
 import { DrawToolbar } from './components/DrawToolbar';
@@ -11,6 +11,7 @@ export type DrawProps = {
 
 export function Draw({ canvasData }: DrawProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const {
     canvasRef,
     selectedTool,
@@ -26,6 +27,10 @@ export function Draw({ canvasData }: DrawProps) {
     setFontFamily,
     fontSize,
     setFontSize,
+    editingElementId,
+    setEditingElementId,
+    editingText,
+    setEditingText,
     selectedElementId,
     selectedElement,
     handleMouseDown,
@@ -40,7 +45,18 @@ export function Draw({ canvasData }: DrawProps) {
     saveToServer,
     exportSnapshot,
     clearCanvas,
+    viewport,
+    handleCanvasDoubleClick,
+    finalizeTextEdit,
+    cancelTextEdit,
   } = useDrawCanvas({ initialCanvasData: canvasData, containerRef });
+
+
+  useEffect(() => {
+    if (editingElementId && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [editingElementId]);
 
   const cursor =
     selectedTool === 'select' ? 'default' : selectedTool === 'eraser' ? 'crosshair' : 'crosshair';
@@ -73,8 +89,48 @@ export function Draw({ canvasData }: DrawProps) {
     updateSelectedElementProps({ color });
   };
 
+  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      finalizeTextEdit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelTextEdit();
+    }
+  };
+
+  const handleTextareaBlur = () => {
+    finalizeTextEdit();
+  };
+
+  const editingElement = editingElementId
+    ? elements.find((el) => el.id === editingElementId) || null
+    : null;
+
+  const textareaStyle: React.CSSProperties | undefined =
+    editingElement && editingElement.type === 'text'
+      ? {
+          position: 'absolute',
+          left: `${editingElement.x * viewport.zoom + viewport.offsetX}px`,
+          top: `${editingElement.y * viewport.zoom + viewport.offsetY}px`,
+          fontSize: `${editingElement.fontSize * viewport.zoom}px`,
+          fontFamily: editingElement.fontFamily,
+          color: editingElement.color,
+          background: 'transparent',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          outline: 'none',
+          resize: 'none',
+          padding: '2px',
+          minWidth: '100px',
+          minHeight: `${editingElement.fontSize * viewport.zoom * 1.2}px`,
+          transformOrigin: 'top left',
+          pointerEvents: 'auto',
+          zIndex: 1000,
+        }
+      : undefined;
+
   return (
-    <div className="w-full h-screen flex flex-col bg-[#0a0a0a] relative">
+    <div className="w-full h-screen flex flex-col  relative">
       <DrawToolbar
         selectedTool={selectedTool}
         onToolChange={setSelectedTool}
@@ -110,9 +166,35 @@ export function Draw({ canvasData }: DrawProps) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onDoubleClick={handleCanvasDoubleClick}
           className="absolute inset-0 w-full h-full"
           style={{ cursor }}
         />
+        {editingElementId && editingElement?.type === 'text' && (
+          <textarea
+            ref={textareaRef}
+            value={editingText}
+            onChange={(e) => setEditingText(e.target.value)}
+            onKeyDown={handleTextareaKeyDown}
+            onBlur={handleTextareaBlur}
+            style={textareaStyle || {
+              position: 'absolute',
+              left: '100px',
+              top: '100px',
+              fontSize: '24px',
+              fontFamily: 'Arial',
+              color: '#ffffff',
+              background: 'rgba(0,0,0,0.5)',
+              border: '1px solid red',
+              outline: 'none',
+              resize: 'none',
+              padding: '2px',
+              minWidth: '100px',
+              zIndex: 1000,
+            }}
+            autoFocus
+          />
+        )}
         <ElementPropertyPanel
           element={selectedElement}
           onStrokeColorChange={handleSelectedStrokeChange}

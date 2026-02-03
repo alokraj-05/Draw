@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/app/store';
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
 import {
   updateCanvasData,
   CanvasData,
@@ -13,11 +13,15 @@ import {
   DiamondElement,
   RoundedRectElement,
   TextElement,
-} from '../../dashboardSlice';
-import { updateFile, getSpecificFile } from '@/api/files';
-import { getMousePos, isPointInElement, getResizeHandleAtPosition } from '../utils/canvasUtils';
-import { renderCanvas } from '../utils/canvasRenderer';
-import type { ResizeHandle, Viewport } from '../types';
+} from "../../dashboardSlice";
+import { updateFile, getSpecificFile } from "@/api/files";
+import {
+  getMousePos,
+  isPointInElement,
+  getResizeHandleAtPosition,
+} from "../utils/canvasUtils";
+import { renderCanvas } from "../utils/canvasRenderer";
+import type { ResizeHandle, Viewport } from "../types";
 
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
@@ -34,9 +38,17 @@ function generateId() {
   return `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-function createBaseElement(): Pick<Element, 'strokeColor' | 'strokeWidth' | 'opacity' | 'isDeleted' | 'createdAt' | 'updatedAt'> {
+function createBaseElement(): Pick<
+  Element,
+  | "strokeColor"
+  | "strokeWidth"
+  | "opacity"
+  | "isDeleted"
+  | "createdAt"
+  | "updatedAt"
+> {
   return {
-    strokeColor: '#ffffff',
+    strokeColor: "#ffffff",
     strokeWidth: 2,
     opacity: 1,
     isDeleted: false,
@@ -52,27 +64,33 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
   const selectedFile = useSelector((s: RootState) => s.dashboard.selectedFile);
 
   const [selectedTool, setSelectedTool] = useState<CanvasTool>(
-    initialCanvasData?.appState.selectedTool || 'draw'
+    initialCanvasData?.appState.selectedTool || "draw",
   );
-  const [elements, setElements] = useState<Element[]>(initialCanvasData?.elements || []);
+  const [elements, setElements] = useState<Element[]>(
+    initialCanvasData?.elements || [],
+  );
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentElement, setCurrentElement] = useState<Element | null>(null);
   const [strokeColor, setStrokeColor] = useState(
-    initialCanvasData?.appState.strokeColor || '#ffffff'
+    initialCanvasData?.appState.strokeColor || "#ffffff",
   );
   const [fillColor, setFillColor] = useState(
-    initialCanvasData?.appState.fillColor || 'transparent'
+    initialCanvasData?.appState.fillColor || "transparent",
   );
   const [strokeWidth, setStrokeWidth] = useState(
-    initialCanvasData?.appState.strokeWidth || 2
+    initialCanvasData?.appState.strokeWidth || 2,
   );
-  const [fontFamily, setFontFamily] = useState('Arial');
+  const [editingElementId, setEditingElementId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+  const [fontFamily, setFontFamily] = useState("Arial");
   const [fontSize, setFontSize] = useState(24);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
-    initialCanvasData?.appState.selectedElementId ?? null
+    initialCanvasData?.appState.selectedElementId ?? null,
   );
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(
+    null,
+  );
   const [isResizing, setIsResizing] = useState(false);
   const [resizeHandle, setResizeHandle] = useState<ResizeHandle>(null);
 
@@ -126,10 +144,63 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     }, 0);
   }, [future, elements]);
 
+  // Finalize text editing
+  const finalizeTextEdit = useCallback(() => {
+    if (!editingElementId) return;
+    
+    if (editingText.trim() === "") {
+      // Delete empty text element
+      setElements((prev) => prev.filter((el) => el.id !== editingElementId));
+    } else {
+      // Update text element with final text
+      setElements((prev) =>
+        prev.map((el) => {
+          if (el.id === editingElementId && el.type === 'text') {
+            return { ...el, text: editingText } as TextElement;
+          }
+          return el;
+        })
+      );
+    }
+    
+    setEditingElementId(null);
+    setEditingText("");
+  }, [editingElementId, editingText]);
+
+  // Cancel text editing
+  const cancelTextEdit = useCallback(() => {
+    if (!editingElementId) return;
+    
+    // Delete the text element
+    setElements((prev) => prev.filter((el) => el.id !== editingElementId));
+    setEditingElementId(null);
+    setEditingText("");
+  }, [editingElementId]);
+
+  // Handle double-click for editing existing text
+  const handleCanvasDoubleClick = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      const pos = getMousePos(e, canvas, viewport);
+
+      // Find text element at position
+      const textElement = elements.find(
+        (el) => el.type === 'text' && isPointInElement(pos.x, pos.y, el)
+      ) as TextElement | undefined;
+
+      if (textElement) {
+        setEditingElementId(textElement.id);
+        setEditingText(textElement.text);
+        setSelectedElementId(textElement.id);
+      }
+    },
+    [elements, viewport]
+  );
+
   // Sync to Redux when canvas state changes
   useEffect(() => {
     const data: CanvasData = {
-      version: '1.0.0',
+      version: "1.0.0",
       appState: {
         zoom: viewport.zoom,
         offsetX: viewport.offsetX,
@@ -143,7 +214,16 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
       elements,
     };
     dispatch(updateCanvasData(data));
-  }, [elements, selectedTool, strokeColor, fillColor, strokeWidth, selectedElementId, viewport, dispatch]);
+  }, [
+    elements,
+    selectedTool,
+    strokeColor,
+    fillColor,
+    strokeWidth,
+    selectedElementId,
+    viewport,
+    dispatch,
+  ]);
 
   // Resize canvas and re-render when dependencies change
   useEffect(() => {
@@ -153,57 +233,63 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    // Filter out the element being edited so it doesn't show on canvas
+    const visibleElements = elements.filter(el => el.id !== editingElementId);
 
     renderCanvas({
       ctx,
       canvas,
-      elements,
+      elements: visibleElements,
       currentElement,
       selectedElementId,
       selectedTool,
       viewport,
     });
-  }, [elements, selectedElementId, currentElement, selectedTool, viewport]);
+  }, [elements, selectedElementId, currentElement, selectedTool, viewport, editingElementId]);
 
   // Keyboard: delete, undo, redo, space for pan
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === ' ') {
+      // Don't interfere with textarea editing
+      if (editingElementId) return;
+      
+      if (e.key === " ") {
         e.preventDefault();
         spacePressedRef.current = true;
       }
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z') {
+        if (e.key === "z") {
           e.preventDefault();
           if (e.shiftKey) redo();
           else undo();
-        } else if (e.key === 'y') {
+        } else if (e.key === "y") {
           e.preventDefault();
           redo();
         }
       }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId) {
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedElementId) {
         e.preventDefault();
         deleteSelected();
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === ' ') {
+      if (e.key === " ") {
         e.preventDefault();
         spacePressedRef.current = false;
         setIsPanning(false);
         panStartRef.current = null;
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [selectedElementId, undo, redo]);
+  }, [selectedElementId, undo, redo, editingElementId]);
 
   function deleteSelected() {
     if (selectedElementId) {
@@ -229,42 +315,48 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         prev.map((el) => {
           if (el.id !== selectedElementId) return el;
           const next = { ...el };
-          if (props.strokeColor !== undefined) next.strokeColor = props.strokeColor;
-          if (props.strokeWidth !== undefined) next.strokeWidth = props.strokeWidth;
-          if ('fillColor' in next && props.fillColor !== undefined) (next as { fillColor: string }).fillColor = props.fillColor;
-          if (el.type === 'text') {
+          if (props.strokeColor !== undefined)
+            next.strokeColor = props.strokeColor;
+          if (props.strokeWidth !== undefined)
+            next.strokeWidth = props.strokeWidth;
+          if ("fillColor" in next && props.fillColor !== undefined)
+            (next as { fillColor: string }).fillColor = props.fillColor;
+          if (el.type === "text") {
             const textEl = next as TextElement;
-            if (props.fontFamily !== undefined) textEl.fontFamily = props.fontFamily;
+            if (props.fontFamily !== undefined)
+              textEl.fontFamily = props.fontFamily;
             if (props.fontSize !== undefined) textEl.fontSize = props.fontSize;
             if (props.text !== undefined) textEl.text = props.text;
             if (props.color !== undefined) textEl.color = props.color;
           }
           return next;
-        })
+        }),
       );
     },
-    [selectedElementId, recordHistory]
+    [selectedElementId, recordHistory],
   );
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const screenX = e.clientX - rect.left;
-      const screenY = e.clientY - rect.top;
-      const v = viewportRef.current;
-      const worldX = (screenX - v.offsetX) / v.zoom;
-      const worldY = (screenY - v.offsetY) / v.zoom;
-      const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-      const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom + delta));
-      const newOffsetX = screenX - worldX * newZoom;
-      const newOffsetY = screenY - worldY * newZoom;
-      setViewport((prev) => ({ ...prev, zoom: newZoom, offsetX: newOffsetX, offsetY: newOffsetY }));
-    },
-    []
-  );
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    const v = viewportRef.current;
+    const worldX = (screenX - v.offsetX) / v.zoom;
+    const worldY = (screenY - v.offsetY) / v.zoom;
+    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom + delta));
+    const newOffsetX = screenX - worldX * newZoom;
+    const newOffsetY = screenY - worldY * newZoom;
+    setViewport((prev) => ({
+      ...prev,
+      zoom: newZoom,
+      offsetX: newOffsetX,
+      offsetY: newOffsetY,
+    }));
+  }, []);
 
   // Non-passive wheel listener so preventDefault() works and scroll-to-zoom works
   useEffect(() => {
@@ -289,13 +381,15 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         offsetY: screenY - worldY * newZoom,
       }));
     };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
   }, [containerRef]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    const screenX = canvas ? e.clientX - canvas.getBoundingClientRect().left : 0;
+    const screenX = canvas
+      ? e.clientX - canvas.getBoundingClientRect().left
+      : 0;
     const screenY = canvas ? e.clientY - canvas.getBoundingClientRect().top : 0;
     const pos = getMousePos(e, canvas, viewport);
 
@@ -308,36 +402,60 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     }
     if (e.button !== 0) return;
 
-    if (selectedTool === 'eraser') {
-      const elementToDelete = elements.find((el) => isPointInElement(pos.x, pos.y, el));
+    if (selectedTool === "eraser") {
+      const elementToDelete = elements.find((el) =>
+        isPointInElement(pos.x, pos.y, el),
+      );
       if (elementToDelete) {
-        setElements((prev) => prev.filter((el) => el.id !== elementToDelete.id));
+        setElements((prev) =>
+          prev.filter((el) => el.id !== elementToDelete.id),
+        );
       }
       return;
     }
 
-    if (selectedTool === 'text') {
-      const userText = window.prompt('Enter text:', 'Text');
-      if (userText != null && userText.trim() !== '') {
-        recordHistory();
-        const base = { ...createBaseElement(), id: generateId(), strokeColor, strokeWidth };
-        const textEl: TextElement = {
-          ...base,
-          type: 'text',
-          x: pos.x,
-          y: pos.y,
-          text: userText.trim(),
-          fontSize,
-          fontFamily,
-          color: strokeColor,
-        };
-        setElements((prev) => [...prev, textEl]);
-      }
+    if (selectedTool === "text") {
+      const selectedElement = elements.find(el => isPointInElement(pos.x,pos.y,el))
+      if(selectedElement){
+        const handle = getResizeHandleAtPosition(pos.x,pos.y,selectedElement);
+        if(handle){
+          recordHistory();
+          setIsResizing(true);
+          setResizeHandle(handle);
+          setSelectedElementId(selectedElement.id)
+        }
+        }else{
+          console.log("Text tool pressed on canvas")
+          recordHistory();
+          const base = {
+            ...createBaseElement(),
+            id: generateId(),
+            strokeColor,
+            strokeWidth,
+          };
+          const textEl: TextElement = {
+            ...base,
+            type: "text",
+            x: pos.x,
+            y: pos.y,
+            text: "",
+            fontSize,
+            fontFamily,
+            color: strokeColor,
+          };
+          setElements((prev) => [...prev, textEl]);
+          setTimeout(()=>{
+            setEditingElementId(textEl.id);
+            setEditingText("");
+          },0)
+        }
       return;
     }
 
-    if (selectedTool === 'select') {
-      const selectedElement = elements.find((el) => isPointInElement(pos.x, pos.y, el));
+    if (selectedTool === "select") {
+      const selectedElement = elements.find((el) =>
+        isPointInElement(pos.x, pos.y, el),
+      );
       if (selectedElement) {
         const handle = getResizeHandleAtPosition(pos.x, pos.y, selectedElement);
         if (handle) {
@@ -358,20 +476,25 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     }
 
     setIsDrawing(true);
-    const base = { ...createBaseElement(), id: generateId(), strokeColor, strokeWidth };
+    const base = {
+      ...createBaseElement(),
+      id: generateId(),
+      strokeColor,
+      strokeWidth,
+    };
 
     switch (selectedTool) {
-      case 'draw':
+      case "draw":
         setCurrentElement({
           ...base,
-          type: 'draw',
+          type: "draw",
           points: [[pos.x, pos.y]],
         } as DrawElement);
         break;
-      case 'rectangle':
+      case "rectangle":
         setCurrentElement({
           ...base,
-          type: 'rectangle',
+          type: "rectangle",
           x: pos.x,
           y: pos.y,
           width: 0,
@@ -380,32 +503,32 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
           rotation: 0,
         } as RectangleElement);
         break;
-      case 'circle':
+      case "circle":
         setCurrentElement({
           ...base,
-          type: 'circle',
+          type: "circle",
           x: pos.x,
           y: pos.y,
           radius: 0,
           fillColor,
         } as CircleElement);
         break;
-      case 'line':
-      case 'arrow':
+      case "line":
+      case "arrow":
         setCurrentElement({
           ...base,
-          type: 'line',
+          type: "line",
           x1: pos.x,
           y1: pos.y,
           x2: pos.x,
           y2: pos.y,
-          arrowEnd: selectedTool === 'arrow',
+          arrowEnd: selectedTool === "arrow",
         } as LineElement);
         break;
-      case 'diamond':
+      case "diamond":
         setCurrentElement({
           ...base,
-          type: 'diamond',
+          type: "diamond",
           x: pos.x,
           y: pos.y,
           width: 0,
@@ -413,10 +536,10 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
           fillColor,
         } as DiamondElement);
         break;
-      case 'roundedRect':
+      case "roundedRect":
         setCurrentElement({
           ...base,
-          type: 'roundedRect',
+          type: "roundedRect",
           x: pos.x,
           y: pos.y,
           width: 0,
@@ -434,7 +557,9 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     const pos = getMousePos(e, canvas, viewport);
-    const screenX = canvas ? e.clientX - canvas.getBoundingClientRect().left : 0;
+    const screenX = canvas
+      ? e.clientX - canvas.getBoundingClientRect().left
+      : 0;
     const screenY = canvas ? e.clientY - canvas.getBoundingClientRect().top : 0;
 
     if (isPanning && panStartRef.current) {
@@ -454,15 +579,15 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         prev.map((el) => {
           if (el.id !== selectedElementId) return el;
           switch (el.type) {
-            case 'rectangle': {
+            case "rectangle": {
               const rect = el as RectangleElement;
               return { ...rect, x: rect.x + dx, y: rect.y + dy };
             }
-            case 'circle': {
+            case "circle": {
               const circ = el as CircleElement;
               return { ...circ, x: circ.x + dx, y: circ.y + dy };
             }
-            case 'line': {
+            case "line": {
               const line = el as LineElement;
               return {
                 ...line,
@@ -472,29 +597,31 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
                 y2: line.y2 + dy,
               };
             }
-            case 'draw': {
+            case "draw": {
               const draw = el as DrawElement;
               return {
                 ...draw,
-                points: draw.points.map(([x, y]) => [x + dx, y + dy] as [number, number]),
+                points: draw.points.map(
+                  ([x, y]) => [x + dx, y + dy] as [number, number],
+                ),
               };
             }
-            case 'diamond': {
+            case "diamond": {
               const d = el as DiamondElement;
               return { ...d, x: d.x + dx, y: d.y + dy };
             }
-            case 'roundedRect': {
+            case "roundedRect": {
               const rr = el as RoundedRectElement;
               return { ...rr, x: rr.x + dx, y: rr.y + dy };
             }
-            case 'text': {
+            case "text": {
               const text = el as TextElement;
               return { ...text, x: text.x + dx, y: text.y + dy };
             }
             default:
               return el;
           }
-        })
+        }),
       );
       setDragStart(pos);
       return;
@@ -504,26 +631,26 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
       setElements((prev) =>
         prev.map((el) => {
           if (el.id !== selectedElementId) return el;
-          if (el.type === 'rectangle') {
+          if (el.type === "rectangle") {
             const rect = el as RectangleElement;
             const newRect = { ...rect };
             switch (resizeHandle) {
-              case 'br':
+              case "br":
                 newRect.width = pos.x - rect.x;
                 newRect.height = pos.y - rect.y;
                 break;
-              case 'tl':
+              case "tl":
                 newRect.width = rect.width + (rect.x - pos.x);
                 newRect.height = rect.height + (rect.y - pos.y);
                 newRect.x = pos.x;
                 newRect.y = pos.y;
                 break;
-              case 'tr':
+              case "tr":
                 newRect.width = pos.x - rect.x;
                 newRect.height = rect.height + (rect.y - pos.y);
                 newRect.y = pos.y;
                 break;
-              case 'bl':
+              case "bl":
                 newRect.width = rect.width + (rect.x - pos.x);
                 newRect.height = pos.y - rect.y;
                 newRect.x = pos.x;
@@ -531,33 +658,33 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
             }
             return newRect;
           }
-          if (el.type === 'circle') {
+          if (el.type === "circle") {
             const circ = el as CircleElement;
             const radius = Math.sqrt(
-              Math.pow(pos.x - circ.x, 2) + Math.pow(pos.y - circ.y, 2)
+              Math.pow(pos.x - circ.x, 2) + Math.pow(pos.y - circ.y, 2),
             );
             return { ...circ, radius };
           }
-          if (el.type === 'diamond') {
+          if (el.type === "diamond") {
             const d = el as DiamondElement;
             const newRect = { ...d };
             switch (resizeHandle) {
-              case 'br':
+              case "br":
                 newRect.width = pos.x - d.x;
                 newRect.height = pos.y - d.y;
                 break;
-              case 'tl':
+              case "tl":
                 newRect.width = d.width + (d.x - pos.x);
                 newRect.height = d.height + (d.y - pos.y);
                 newRect.x = pos.x;
                 newRect.y = pos.y;
                 break;
-              case 'tr':
+              case "tr":
                 newRect.width = pos.x - d.x;
                 newRect.height = d.height + (d.y - pos.y);
                 newRect.y = pos.y;
                 break;
-              case 'bl':
+              case "bl":
                 newRect.width = d.width + (d.x - pos.x);
                 newRect.height = pos.y - d.y;
                 newRect.x = pos.x;
@@ -565,26 +692,26 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
             }
             return newRect;
           }
-          if (el.type === 'roundedRect') {
+          if (el.type === "roundedRect") {
             const rr = el as RoundedRectElement;
             const newRect = { ...rr };
             switch (resizeHandle) {
-              case 'br':
+              case "br":
                 newRect.width = pos.x - rr.x;
                 newRect.height = pos.y - rr.y;
                 break;
-              case 'tl':
+              case "tl":
                 newRect.width = rr.width + (rr.x - pos.x);
                 newRect.height = rr.height + (rr.y - pos.y);
                 newRect.x = pos.x;
                 newRect.y = pos.y;
                 break;
-              case 'tr':
+              case "tr":
                 newRect.width = pos.x - rr.x;
                 newRect.height = rr.height + (rr.y - pos.y);
                 newRect.y = pos.y;
                 break;
-              case 'bl':
+              case "bl":
                 newRect.width = rr.width + (rr.x - pos.x);
                 newRect.height = pos.y - rr.y;
                 newRect.x = pos.x;
@@ -593,7 +720,7 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
             return newRect;
           }
           return el;
-        })
+        }),
       );
       return;
     }
@@ -601,13 +728,13 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     if (!isDrawing || !currentElement) return;
 
     switch (currentElement.type) {
-      case 'draw':
+      case "draw":
         setCurrentElement({
           ...currentElement,
           points: [...(currentElement as DrawElement).points, [pos.x, pos.y]],
         });
         break;
-      case 'rectangle': {
+      case "rectangle": {
         const rect = currentElement as RectangleElement;
         setCurrentElement({
           ...rect,
@@ -616,7 +743,7 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         });
         break;
       }
-      case 'diamond': {
+      case "diamond": {
         const d = currentElement as DiamondElement;
         setCurrentElement({
           ...d,
@@ -625,7 +752,7 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         });
         break;
       }
-      case 'roundedRect': {
+      case "roundedRect": {
         const rr = currentElement as RoundedRectElement;
         setCurrentElement({
           ...rr,
@@ -634,15 +761,15 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
         });
         break;
       }
-      case 'circle': {
+      case "circle": {
         const circ = currentElement as CircleElement;
         const radius = Math.sqrt(
-          Math.pow(pos.x - circ.x, 2) + Math.pow(pos.y - circ.y, 2)
+          Math.pow(pos.x - circ.x, 2) + Math.pow(pos.y - circ.y, 2),
         );
         setCurrentElement({ ...circ, radius });
         break;
       }
-      case 'line': {
+      case "line": {
         const line = currentElement as LineElement;
         setCurrentElement({ ...line, x2: pos.x, y2: pos.y });
         break;
@@ -672,11 +799,11 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
 
   const saveToServer = async () => {
     if (!selectedFile?.id) {
-      alert('No file selected to save.');
+      alert("No file selected to save.");
       return;
     }
     const data: CanvasData = {
-      version: '1.0.0',
+      version: "1.0.0",
       appState: {
         zoom: viewport.zoom,
         offsetX: viewport.offsetX,
@@ -693,38 +820,38 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
       const existing = await getSpecificFile(selectedFile.id);
       const merged = {
         ...existing,
-        type: existing?.type ?? 'canvas',
+        type: existing?.type ?? "canvas",
         version: existing?.version ?? data.version,
         appState: data.appState,
         elements: data.elements,
       };
       await updateFile(selectedFile.id, merged);
-      alert('Saved to drive');
+      alert("Saved to drive");
     } catch (err) {
       console.error(err);
-      alert('Failed to save');
+      alert("Failed to save");
     }
   };
 
   const exportSnapshot = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const url = canvas.toDataURL('image/png');
-    const w = window.open('about:blank');
+    const url = canvas.toDataURL("image/png");
+    const w = window.open("about:blank");
     if (w) {
       w.document.write(`<img src="${url}" style="width:100%"/>`);
     }
   };
 
   const clearCanvas = () => {
-    if (confirm('Clear all elements?')) {
+    if (confirm("Clear all elements?")) {
       recordHistory();
       setElements([]);
     }
   };
 
   const selectedElement = selectedElementId
-    ? elements.find((el) => el.id === selectedElementId) ?? null
+    ? (elements.find((el) => el.id === selectedElementId) ?? null)
     : null;
 
   return {
@@ -742,12 +869,17 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     setFontFamily,
     fontSize,
     setFontSize,
+    editingElementId,
+    setEditingElementId,
+    editingText,
+    setEditingText,
     selectedElementId,
     selectedElement,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
     handleWheel,
+    handleCanvasDoubleClick,
     deleteSelected,
     updateSelectedElementProps,
     undo,
@@ -757,5 +889,8 @@ export function useDrawCanvas(props: UseDrawCanvasProps = {}) {
     saveToServer,
     exportSnapshot,
     clearCanvas,
+    viewport,
+    finalizeTextEdit,
+    cancelTextEdit,
   };
 }

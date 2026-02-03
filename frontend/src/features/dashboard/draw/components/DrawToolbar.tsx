@@ -16,7 +16,7 @@ import {
   SquareRoundCorner,
 } from 'lucide-react';
 import type { CanvasTool } from '../../dashboardSlice';
-
+import { useState } from 'react';
 const TOOLS: { id: CanvasTool; icon: React.ComponentType<{ size?: number }>; label: string }[] = [
   { id: 'select', icon: MousePointer, label: 'Select' },
   { id: 'draw', icon: Pencil, label: 'Draw' },
@@ -90,11 +90,17 @@ export function DrawToolbar({
   onExport,
   onClear,
 }: DrawToolbarProps) {
+  const [tempBool,setTempBool] = useState(true);
   return (
-    <div className="flex items-center justify-between px-14 py-3 bg-[#1a1a1a] border-b border-slate-800">
+    <div className="flex w-full items-center justify-center bg-[#1a1a1a]">
+
+    <div className="w-full flex items-center justify-around py-1 mt-1 bg-white/ rounded-full px-2">
       {/* Undo/Redo + Tools */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 border-r border-slate-700 pr-2">
+      <div className="w-8 h-8"></div>
+      <div className="">
+
+      <div className="flex items-center gap-3 mr-2">
+        <div className="flex items-center gap-1 border-r border-border pr-2">
           <button
             onClick={onUndo}
             disabled={!canUndo}
@@ -120,7 +126,7 @@ export function DrawToolbar({
             className={`p-2 rounded-lg transition-all ${
               selectedTool === tool.id
                 ? 'bg-blue-500/20 text-blue-400'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50'
+                : 'text-slate-400 hover:bg-slate-700/50'
             }`}
             title={tool.label}
           >
@@ -131,64 +137,64 @@ export function DrawToolbar({
       </div>
 
       {/* Colors & Options */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400">Stroke:</label>
+      {(selectedTool !== 'select' && selectedTool !== 'eraser') && (
+
+      <div className="flex flex-col items-center gap-4 absolute top-30 left-10 w-18 h-72 z-10 bg-white/5 rounded-lg py-2">
+        <div className="flex items-center justify-center gap-2 ">
+        <div className="flex items-center flex-col justify-end">
           <input
             type="color"
             value={strokeColor}
             onChange={(e) => onStrokeColorChange(e.target.value)}
-            className="w-8 h-8 rounded cursor-pointer"
+            className="w-6 h-6 rounded-full cursor-pointer"
           />
+          <label className="text-[10px] text-slate-400">Stroke:</label>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400">Fill:</label>
+        <div className="flex items-center flex-col">
           <input
             type="color"
             value={fillColor === 'transparent' ? '#000000' : fillColor}
             onChange={(e) => onFillColorChange(e.target.value)}
-            className="w-8 h-8 rounded cursor-pointer"
+            className="w-6 h-6 rounded-full cursor-pointer"
           />
-          <button
-            onClick={() => onFillColorChange('transparent')}
-            className="px-2 py-1 text-xs bg-slate-800 text-slate-400 rounded hover:bg-slate-700"
-          >
-            None
-          </button>
+          <label className="text-[10px] text-slate-400">Fill:</label>
+          
+        </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400">Width:</label>
+        <div className="flex items-center gap-2 flex-col">
           <input
-            type="range"
+            type="text"
             min="1"
             max="20"
+            inputMode='numeric'
+            pattern='[0-9]'
             value={strokeWidth}
             onChange={(e) => onStrokeWidthChange(Number(e.target.value))}
-            className="w-24"
+            className="w-14 border border-border rounded-lg focus-within:border-border focus:outline-none text-center"
           />
-          <span className="text-xs text-slate-400 w-6">{strokeWidth}</span>
+          <label className="text-xs text-slate-400">Width:</label>
+          
         </div>
 
         {selectedTool === 'text' && (
           <>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-slate-400">Font:</label>
+            <div className="flex items-center gap-2 flex-col">
               <select
                 value={fontFamily}
                 onChange={(e) => onFontFamilyChange(e.target.value)}
-                className="rounded bg-slate-800 text-slate-300 text-xs px-2 py-1.5 border border-slate-600 min-w-35"
+                className="rounded bg-slate-800 text-slate-300 text-xs px-2 py-1.5 border border-slate-600 min-w-15 w-10"
               >
                 {FONT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
+                  <option key={opt.value} value={opt.value} className='min-w-20 w-10'>
                     {opt.label}
                   </option>
                 ))}
               </select>
+                <label className="text-xs text-slate-400">Font:</label>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-slate-400">Size:</label>
+            <div className="flex flex-col items-center gap-2">
               <input
                 type="number"
                 min="8"
@@ -197,6 +203,7 @@ export function DrawToolbar({
                 onChange={(e) => onFontSizeChange(Number(e.target.value) || 24)}
                 className="w-14 rounded bg-slate-800 text-slate-300 text-xs px-2 py-1 border border-slate-600"
               />
+              <label className="text-xs text-slate-400">Size:</label>
             </div>
           </>
         )}
@@ -209,6 +216,8 @@ export function DrawToolbar({
             Delete Selected
           </button>
         )}
+      </div>
+      )}
       </div>
 
       {/* Actions */}
@@ -236,6 +245,7 @@ export function DrawToolbar({
           <Trash2 size={18} />
         </button>
       </div>
+    </div>
     </div>
   );
 }
