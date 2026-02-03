@@ -16,7 +16,7 @@ import {
   SquareRoundCorner,
 } from 'lucide-react';
 import type { CanvasTool } from '../../dashboardSlice';
-import { useState } from 'react';
+
 const TOOLS: { id: CanvasTool; icon: React.ComponentType<{ size?: number }>; label: string }[] = [
   { id: 'select', icon: MousePointer, label: 'Select' },
   { id: 'draw', icon: Pencil, label: 'Draw' },
@@ -90,7 +90,6 @@ export function DrawToolbar({
   onExport,
   onClear,
 }: DrawToolbarProps) {
-  const [tempBool,setTempBool] = useState(true);
   return (
     <div className="flex w-full items-center justify-center bg-[#1a1a1a]">
 
