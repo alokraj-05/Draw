@@ -29,7 +29,7 @@ export const BaseNodeIcon: React.FC<InputNodeIconProps> = ({
 };
 
 export const SingleInputNodeIcon: React.FC<InputNodeIconProps> = ({
-  className = "w-6 h-6 text-neutral-200",
+  className = "w-6 h-6 text-neutral-200 flex items-center justify-center",
 }) => {
   return (
     <svg
@@ -74,7 +74,7 @@ export const DoubleHandleNodeIcon: React.FC<InputNodeIconProps> = ({
       {/* Node body */}
       <rect
         x="6"
-        y="6"
+        y="12"
         width="52"
         height="36"
         rx="6"
@@ -86,7 +86,7 @@ export const DoubleHandleNodeIcon: React.FC<InputNodeIconProps> = ({
       {/* down handle */}
       <circle
         cx="32"
-        cy="42"
+        cy="48"
         r="4"
         fill="currentColor"
         stroke="currentColor"
@@ -96,7 +96,7 @@ export const DoubleHandleNodeIcon: React.FC<InputNodeIconProps> = ({
       {/* up handle */}
       <circle
         cx="32"
-        cy="7"
+        cy="13"
         r="4"
         fill="currentColor"
         stroke="currentColor"
@@ -119,7 +119,7 @@ export const FourHandleNodeIcon: React.FC<InputNodeIconProps> = ({
       {/* Node body */}
       <rect
         x="6"
-        y="6"
+        y="12"
         width="52"
         height="36"
         rx="6"
@@ -131,21 +131,21 @@ export const FourHandleNodeIcon: React.FC<InputNodeIconProps> = ({
       />
 
       {/* Top */}
-      <circle cx="32" cy="6" r="4" fill="currentColor" />
+      <circle cx="32" cy="12" r="4" fill="currentColor" />
 
       {/* Bottom */}
-      <circle cx="32" cy="42" r="4" fill="currentColor" />
+      <circle cx="32" cy="48" r="4" fill="currentColor" />
 
       {/* Left */}
-      <circle cx="6" cy="24" r="4" fill="currentColor" />
+      <circle cx="6" cy="30" r="4" fill="currentColor" />
 
       {/* Right */}
-      <circle cx="58" cy="24" r="4" fill="currentColor" />
+      <circle cx="58" cy="31" r="4" fill="currentColor" />
     </svg>
   );
 };
 export const SingleHandleNodeRIcon: React.FC<InputNodeIconProps> = ({
-  className = "w-6 h-6 text-neutral-200",
+  className = "w-6 h-6 text-neutral-200 flex items-center justify-center",
 }) => {
   return (
     <svg
@@ -156,8 +156,8 @@ export const SingleHandleNodeRIcon: React.FC<InputNodeIconProps> = ({
     >
       {/* Node body */}
       <rect
-        x="6"
-        y="6"
+        x="5"
+        y="12"
         width="52"
         height="36"
         rx="6"
@@ -169,7 +169,34 @@ export const SingleHandleNodeRIcon: React.FC<InputNodeIconProps> = ({
       />
 
       {/* Right */}
-      <circle cx="58" cy="24" r="4" fill="currentColor" />
+      <circle cx="58" cy="31" r="4" fill="currentColor" />
+    </svg>
+  );
+};
+export const GroupHandlNodeIcon: React.FC<InputNodeIconProps> = ({
+  className = "w-6 h-6 text-neutral-200 flex items-center justify-center",
+}) => {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className={className}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Node body */}
+      <rect
+        x="5"
+        y="5"
+        width="55"
+        height="55"
+        rx="6"
+        // fill="currentColor"
+        // opacity="0.15"
+        // stroke="currentColor"
+        className="fill-neutral-900 stroke-neutral-600"
+        strokeWidth="2"
+      />
+
     </svg>
   );
 };
@@ -185,8 +212,8 @@ export const DoubleHandleNodeRLIcon: React.FC<InputNodeIconProps> = ({
     >
       {/* Node body */}
       <rect
-        x="6"
-        y="6"
+        x="5"
+        y="5"
         width="52"
         height="36"
         rx="6"

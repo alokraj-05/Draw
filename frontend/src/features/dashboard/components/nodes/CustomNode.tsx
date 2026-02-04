@@ -9,8 +9,8 @@ const DEFAULT_HANDLES: Record<string, HandleConfig[]> = {
     { id: 'single-1', type: 'source', position: Position.Right }
   ],
   double: [
-    { id: 'double-1', type: 'target', position: Position.Left },
-    { id: 'double-2', type: 'source', position: Position.Right }
+    { id: 'double-1', type: 'target', position: Position.Top },
+    { id: 'double-2', type: 'source', position: Position.Bottom }
   ],
   quad: [
     { id: 'quad-1', type: 'target', position: Position.Top },
@@ -19,7 +19,7 @@ const DEFAULT_HANDLES: Record<string, HandleConfig[]> = {
     { id: 'quad-4', type: 'target', position: Position.Left }
   ]
 };
-type CustomNodeProps = NodeProps & {
+export type CustomNodeProps = NodeProps & {
   data: CustomNodeData;
 };
 
