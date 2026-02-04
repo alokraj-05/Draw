@@ -16,6 +16,7 @@ import { useCallback, useState } from "react";
 import { DnDProvider } from "./util/useDnD";
 import { Sidebar } from "./util/ToolSidebar";
 import CustomNode from "./components/nodes/CustomNode";
+import SubFlow from "./components/nodes/SubFlow";
 import { NodeInspector } from "./components/Inspector/NodeInspector";
 import { EdgeInspector } from "./components/Inspector/EdgeInspector";
 import { updateFile } from "@/api/files";
@@ -25,6 +26,7 @@ import { RootState } from "@/app/store";
 
 const nodeTypes = {
   customNode: CustomNode,
+  group: SubFlow
 };
 
 const Flow = ({ node, edge }: any) => {

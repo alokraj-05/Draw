@@ -2,9 +2,9 @@ import { Position } from '@xyflow/react';
 import { CSSProperties } from 'react';
 
 // Node types
-export type NodeHandleType = 'source' | 'target';
-export type NodeVariant = 'single' | 'double' | 'quad';
-
+export type NodeHandleType = 'source' | 'target' ;
+export type NodeVariant = 'single' | 'double' | 'quad' | 'group';
+export type NodeType = 'group';
 // Handle configuration
 export interface HandleConfig {
   id: string;
