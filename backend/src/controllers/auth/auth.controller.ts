@@ -36,7 +36,7 @@ router.get("/me",requireAuth,(req:AuthUser,res:Response)=>{
 })
 
 router.get("/logout",async (req:Request,res:Response)=>{
-  res.clearCookie("draw_").status(200).json({message:"Logout successfully"}).redirect("http://localhost:5173")
+  res.clearCookie("draw_").status(200).redirect("http://localhost:5173")
 })
 
 export default router;
