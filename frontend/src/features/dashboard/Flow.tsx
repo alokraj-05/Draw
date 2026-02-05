@@ -10,6 +10,7 @@ import {
   useEdgesState,
   Connection,
   OnSelectionChangeParams,
+  ConnectionLineType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useState } from "react";
@@ -23,12 +24,18 @@ import { updateFile } from "@/api/files";
 import { Button } from "@/appcomponents/ui/button";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
+import DownloadButton from "./util/FlowToImage";
 
 const nodeTypes = {
   customNode: CustomNode,
   group: SubFlow
 };
-
+const connectionLineStyle = { stroke: '#ffff' };
+const defaultViewPort = {x: 0,y:0,zoom:1.5}
+// const defaultEdgeOptions = {
+//   animated: true,
+//   type: 'smoothstep',
+// };
 const Flow = ({ node, edge }: any) => {
   const selectedFile = useSelector(
     (state: RootState) => state.dashboard.selectedFile
@@ -92,9 +99,15 @@ const Flow = ({ node, edge }: any) => {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
-            onSelectionChange={onSelectionChange}
             nodeTypes={nodeTypes}
+            onSelectionChange={onSelectionChange}
+            connectionLineStyle={connectionLineStyle}
+            connectionLineType={ConnectionLineType.SmoothStep}
+            snapToGrid={true}
+            snapGrid={[25, 25]}
+            defaultViewport={defaultViewPort}
             fitView
+            attributionPosition="bottom-left"
             colorMode="dark"
           >
             <Background variant={BackgroundVariant.Dots} />
@@ -104,6 +117,7 @@ const Flow = ({ node, edge }: any) => {
 
           {/* Save Button */}
           <div className="absolute top-5 right-4 flex gap-2 z-10">
+            <DownloadButton/>
             <Button
               className="p-regular"
               variant="secondary"

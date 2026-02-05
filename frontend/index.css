@@ -261,6 +261,13 @@
   font-weight: 600;
   font-style: normal;
 }
+.react-flow__node-group {
+  padding: 0 !important;
+}
+
+.react-flow__node-group > .react-flow__node-group-inner {
+  padding: 0 !important;
+}
 .react-flow__controls {
   border-radius: 1rem; /* rounds the container */
 }
