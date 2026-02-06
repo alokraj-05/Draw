@@ -3,11 +3,15 @@ import { useAppSelector } from "@/hooks/hooks"
 import { Tooltip,TooltipTrigger,TooltipContent } from "@/appcomponents/ui/tooltip"
 import LogoutButton from "./LogoutButton"
 import Logo from "/logo.png"
+import { Suspense } from "react"
+import { Spinner } from "@/appcomponents/ui/spinner"
 const Header = () => {
   const { isAuthenticated, user} = useAppSelector((state) => state.auth)
 
 
   return (
+    <Suspense fallback={<Spinner/>}>
+
     <div className="flex h-12 w-full fixed top-0 left-0 z-20">
       <ul className="flex justify-around w-full items-center text-[#f6eed8] text-sm mt-5">
         <div className="">
@@ -41,6 +45,7 @@ const Header = () => {
         </ul>
       </ul>
     </div>
+    </Suspense>
   ) 
 }
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 
 const Footer: React.FC = () => {
   return (
-    <footer className="relative mt-40 border-t border-white/5 text-zinc-400 overflow-hidden">
+    <footer className="relative border-t border-white/5 text-zinc-400 overflow-hidden">
 
       {/* Background glow */}
       <div className="absolute right-[-10%] top-[-40%] w-150 h-150 blur-[160px] opacity-30 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.35),transparent_70%)] pointer-events-none"/>
