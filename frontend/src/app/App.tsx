@@ -1,8 +1,8 @@
-import './App.css'
 import { Outlet } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAppDispatch } from '@/hooks/hooks'
 import { checkAuth } from '@/features/auth/authThunks'
+import './App.css'
 
 
 function App() {
