@@ -69,3 +69,6 @@ To run this project locally, you need:
    **- Authorized redirect URIs: `http://localhost:5173`**
 
 **6. Copy your Client ID and API Key.**
+
+
+**On pause**
