@@ -72,3 +72,4 @@ To run this project locally, you need:
 
 
 **On pause**
+**Will start next week**
